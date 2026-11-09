@@ -107,6 +107,11 @@ Windows keyboard behaviour by default, Mac behaviour if you prefer it. F1 lists 
 - Mount ISO, DMG, IMG and CDR; create ISO (Windows, Linux and Mac) or compressed DMG from a folder
 - **[MacRAR](https://gitlab.com/freeware2/macrar)** menu in the right-click menu when MacRAR is installed
 
+**Text editing with [MacNote++](https://gitlab.com/freeware2/macnotepp)**
+- F4 opens files in the free MacNote++ editor when no other editor is chosen
+- F3 can open files read-only in MacNote++ (Settings ▸ Keyboard); Quick Look stays the default
+- Download and install MacNote++ from Settings ▸ Keyboard or the About window
+
 **Keyboard and appearance**
 - Windows keyboard behaviour by default (Enter opens, Backspace goes up, Delete, F2, Ctrl shortcuts); Mac behaviour optional
 - Home, End, Page Up and Page Down move the selection; function key bar, also on the Touch Bar

@@ -107,6 +107,11 @@ Varsayılan olarak Windows klavye düzeni, isterseniz Mac düzeni. F1 tüm kısa
 - ISO, DMG, IMG ve CDR bağlama; klasörden ISO (Windows, Linux ve Mac) ya da sıkıştırılmış DMG oluşturma
 - **[MacRAR](https://gitlab.com/freeware2/macrar)** kuruluysa sağ tık menüsünde MacRAR komutları
 
+**[MacNote++](https://gitlab.com/freeware2/macnotepp) ile metin düzenleme**
+- Başka bir düzenleyici seçilmediyse F4 dosyaları ücretsiz MacNote++ ile açar
+- F3 dosyaları MacNote++'ta salt okunur açabilir (Ayarlar ▸ Klavye); varsayılan Hızlı Bakış'tır
+- MacNote++, Ayarlar ▸ Klavye'den ya da Hakkında penceresinden indirilip kurulabilir
+
 **Klavye ve görünüm**
 - Varsayılan olarak Windows klavye davranışı (Enter açar, Backspace yukarı çıkar, Delete, F2, Ctrl kısayolları); Mac davranışı seçilebilir
 - Home, End, Page Up ve Page Down seçimi taşır; işlev tuşu çubuğu, Touch Bar'da da
