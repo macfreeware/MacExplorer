@@ -676,6 +676,17 @@ final class PaneViewController: NSViewController {
 
     // MARK: Hızlı Bakış
 
+    /// F3: Ayarlardaki seçime göre MacNote++'ta salt okunur açar ya da Hızlı Bakış gösterir.
+    /// Uzak dosyalar ve klasörler her zaman Hızlı Bakış'a gider.
+    func viewSelection() {
+        let items = selectedItems
+        if Preferences.f3OpensMacNote, MacNoteInstaller.isInstalled, !isRemote, !items.isEmpty, items.allSatisfy({ !$0.isDirectory }) {
+            MacNoteInstaller.view(items.map(\.url))
+        } else {
+            toggleQuickLook()
+        }
+    }
+
     /// Boşluk / ⌘Y: seçili öğelerin önizlemesini açar ya da kapatır.
     func toggleQuickLook() {
         guard let panel = QLPreviewPanel.shared() else { return }

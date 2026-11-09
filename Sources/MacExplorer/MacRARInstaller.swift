@@ -49,22 +49,22 @@ enum MacRARInstaller {
                 }
             }
         }
-        sheet.show(task: task, over: parent)
+        sheet.show(task: task, over: parent, message: String(localized: "MacRAR’ın en son sürümü indiriliyor…", bundle: .live))
         task.resume()
     }
 }
 
 /// İndirme sırasında gösterilen küçük pencere: ilerleme çubuğu ve İptal.
 @MainActor
-private final class DownloadSheet: NSObject {
+final class DownloadSheet: NSObject {
     private let panel = NSPanel(contentRect: NSRect(x: 0, y: 0, width: 360, height: 110), styleMask: [.titled], backing: .buffered, defer: true)
     private let bar = NSProgressIndicator()
     private var observation: NSKeyValueObservation?
     private weak var parent: NSWindow?
 
-    func show(task: URLSessionDownloadTask, over parent: NSWindow?) {
+    func show(task: URLSessionDownloadTask, over parent: NSWindow?, message: String) {
         self.parent = parent
-        let label = NSTextField(labelWithString: String(localized: "MacRAR’ın en son sürümü indiriliyor…", bundle: .live))
+        let label = NSTextField(labelWithString: message)
         bar.isIndeterminate = false
         bar.minValue = 0
         bar.maxValue = 1

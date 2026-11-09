@@ -16,6 +16,7 @@ struct AboutView: View {
 
     private let accent = Color(nsColor: Theme.current.accentColor)
     private let macRARInstalled = MacRARInstaller.isInstalled
+    private let macNoteInstalled = MacNoteInstaller.isInstalled
     @State private var updateChecking = false
     @State private var updateResult: String?
 
@@ -62,6 +63,9 @@ struct AboutView: View {
                     Chip(symbol: macRARInstalled ? "checkmark.circle.fill" : "minus.circle",
                          text: Text(macRARInstalled ? "MacRAR kurulu" : "MacRAR kurulu değil"),
                          color: macRARInstalled ? .green : .secondary)
+                    Chip(symbol: macNoteInstalled ? "checkmark.circle.fill" : "minus.circle",
+                         text: Text(macNoteInstalled ? "MacNote++ kurulu" : "MacNote++ kurulu değil"),
+                         color: macNoteInstalled ? .green : .secondary)
                 }
 
                 if !macRARInstalled {
@@ -80,6 +84,23 @@ struct AboutView: View {
                     .controlSize(.small)
                     .padding(10)
                     .background(Color.red.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
+                }
+
+                if !macNoteInstalled {
+                    HStack(spacing: 10) {
+                        Image(systemName: "doc.text.fill").foregroundStyle(.green)
+                        Text("F3 ve F4 için ücretsiz MacNote++'ı kurun.")
+                            .font(.caption)
+                            .fixedSize(horizontal: false, vertical: true)
+                        Spacer(minLength: 4)
+                        Button("Sayfası") { MacNoteInstaller.openPage() }
+                        Button("İndir ve kur") { MacNoteInstaller.downloadAndInstall(over: NSApp.keyWindow) }
+                            .buttonStyle(.borderedProminent)
+                            .tint(accent)
+                    }
+                    .controlSize(.small)
+                    .padding(10)
+                    .background(Color.green.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
                 }
 
                 VStack(spacing: 3) {

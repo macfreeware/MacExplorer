@@ -368,7 +368,7 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate, NSToo
         if mods.isEmpty {
             switch event.keyCode {
             case KeyCode.f1: showShortcuts(); return true
-            case KeyCode.f3 where tableFocused: pane.toggleQuickLook(); return true
+            case KeyCode.f3 where tableFocused: pane.viewSelection(); return true
             case KeyCode.f4 where tableFocused: pane.editSelection(); return true
             case KeyCode.f7: pane.createNewFolder(); return true
             case KeyCode.f8 where tableFocused: pane.deleteSelection(permanently: false); return true
@@ -444,6 +444,7 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate, NSToo
         pane.copyPaths(urls.isEmpty ? [pane.tab.url] : urls)
     }
     @objc func quickLook(_ sender: Any?) { pane.toggleQuickLook() }
+    @objc func viewSelection(_ sender: Any?) { pane.viewSelection() }
 
     @objc func selectMatchingItems(_ sender: Any?) { pane.selectByPattern(adding: true) }
     @objc func deselectMatchingItems(_ sender: Any?) { pane.selectByPattern(adding: false) }
@@ -937,7 +938,7 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate, NSToo
             return !editingText && (!workspace.isDualPane || hasSelection)
         case #selector(editSelection(_:)):
             return !editingText && pane.selectedItems.contains { !$0.isDirectory }
-        case #selector(quickLook(_:)):
+        case #selector(quickLook(_:)), #selector(viewSelection(_:)):
             return !editingText && hasSelection && !pane.isRemote
         case #selector(showProperties(_:)):
             return !pane.isRemote

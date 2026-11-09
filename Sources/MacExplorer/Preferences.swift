@@ -62,6 +62,7 @@ enum Preferences {
         static let viewMode = "viewMode"
         static let toolbarDisplay = "toolbarDisplay"
         static let editorApp = "editorApp"
+        static let f3OpensMacNote = "f3OpensMacNote"
         static let restoreSession = "restoreSession"
         static let dimInactivePane = "dimInactivePane"
         static let previewPane = "previewPane"
@@ -127,16 +128,19 @@ enum Preferences {
         set { UserDefaults.standard.set(newValue.rawValue, forKey: Key.toolbarDisplay) }
     }
 
-    /// F4 Düzenle'nin uygulaması; seçilmediyse sistemin metin düzenleyicisi.
+    /// F4 Düzenle'nin uygulaması; seçilmediyse MacNote++, o da kurulu değilse sistemin metin düzenleyicisi.
     static var editorApp: URL? {
         get {
             if let path = UserDefaults.standard.string(forKey: Key.editorApp), FileManager.default.fileExists(atPath: path) {
                 return URL(fileURLWithPath: path)
             }
-            return NSWorkspace.shared.urlForApplication(toOpen: .plainText)
+            return MacNoteInstaller.app ?? NSWorkspace.shared.urlForApplication(toOpen: .plainText)
         }
         set { UserDefaults.standard.set(newValue?.path, forKey: Key.editorApp) }
     }
+
+    /// F3 dosyaları MacNote++'ta salt okunur açar; kapalıysa Hızlı Bakış.
+    static var f3OpensMacNote: Bool { UserDefaults.standard.bool(forKey: Key.f3OpensMacNote) }
 
     /// Çift panelde etkin olmayan panel soluk (Ayarlar ▸ Arayüz; varsayılan açık).
     static var dimInactivePane: Bool {

@@ -48,7 +48,7 @@ enum FunctionKey: CaseIterable {
         switch self {
         case .help: return #selector(AppDelegate.showShortcuts(_:))
         case .rename: return #selector(BrowserWindowController.renameSelection(_:))
-        case .quickLook: return #selector(BrowserWindowController.quickLook(_:))
+        case .quickLook: return #selector(BrowserWindowController.viewSelection(_:))
         case .edit: return #selector(BrowserWindowController.editSelection(_:))
         case .copy: return #selector(BrowserWindowController.functionF5(_:))
         case .move: return #selector(BrowserWindowController.moveToOtherPane(_:))

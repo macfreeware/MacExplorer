@@ -50,6 +50,10 @@ extension PaneViewController {
             let name = FileManager.default.displayName(atPath: editor.path).replacingOccurrences(of: ".app", with: "")
             add(menu, String(localized: "Düzenle (\(name))", bundle: .live), #selector(menuEdit)).image = icon(editor.path)
         }
+        // F4 başka bir düzenleyiciye ayarlıysa MacNote++ ayrıca sunulur.
+        if !files.isEmpty, let macNote = MacNoteInstaller.app, macNote != Preferences.editorApp {
+            add(menu, String(localized: "MacNote++ ile düzenle", bundle: .live), #selector(menuEditInMacNote)).image = icon(macNote.path)
+        }
         menu.addItem(.separator())
 
         // MacRAR komutları Finder'daki gibi doğrudan menüde, MacRAR simgesi ve aynı adlarla.
@@ -470,6 +474,12 @@ extension PaneViewController {
     @objc private func menuOpen() { openSelection() }
     @objc private func menuQuickLook() { toggleQuickLook() }
     @objc private func menuEdit() { editSelection() }
+    @objc private func menuEditInMacNote() {
+        let files = selectedItems.filter { !$0.isDirectory }.map(\.url)
+        guard !files.isEmpty, let app = MacNoteInstaller.app else { return NSSound.beep() }
+        if isRemote { return RemoteTransfers.open(files, with: app, window: view.window) }
+        NSWorkspace.shared.open(files, withApplicationAt: app, configuration: NSWorkspace.OpenConfiguration())
+    }
 
     @objc private func menuOpenInNewTab() {
         for folder in selectedItems.filter(\.isDirectory) { newTab(url: folder.url, activate: false) }

@@ -277,6 +277,8 @@ private struct InterfaceSettings: View {
 private struct KeyboardSettings: View {
     @AppStorage(Preferences.Key.keyboardMode) private var keyboardMode: KeyboardMode = .windows
     @AppStorage(Preferences.Key.editorApp) private var editorPath = ""
+    @AppStorage(Preferences.Key.f3OpensMacNote) private var f3OpensMacNote = false
+    @State private var macNoteInstalled = MacNoteInstaller.isInstalled
 
     private var editorName: String {
         Preferences.editorApp.map { FileManager.default.displayName(atPath: $0.path).replacingOccurrences(of: ".app", with: "") }
@@ -311,12 +313,30 @@ private struct KeyboardSettings: View {
                         if !editorPath.isEmpty { Button("Sıfırla") { editorPath = "" } }
                     }
                 }
+                SettingRow(symbol: "eye", color: .teal, title: "F3 Önizle", subtitle: "MacNote++ salt okunur açar; büyük dosyalar güvenli önizlemeyle açılır") {
+                    Picker("", selection: $f3OpensMacNote) {
+                        Text("Hızlı Bakış").tag(false)
+                        Text(verbatim: "MacNote++").tag(true)
+                    }
+                    .labelsHidden()
+                    .fixedSize()
+                    .disabled(!macNoteInstalled)
+                }
+                if !macNoteInstalled {
+                    SettingRow(symbol: "doc.text", color: .green, title: "MacNote++ kurulu değil", subtitle: "F3 ve F4 için ücretsiz metin düzenleyici") {
+                        HStack(spacing: 6) {
+                            Button("Sayfası") { MacNoteInstaller.openPage() }
+                            Button("İndir ve kur") { MacNoteInstaller.downloadAndInstall(over: NSApp.keyWindow) }
+                        }
+                    }
+                }
                 SettingRow(symbol: "questionmark.circle", color: .blue, title: "Tüm kısayollar ve işlev tuşları",
                            subtitle: "MacBook'ta F1…F12 için fn tuşunu basılı tutun. Touch Bar'lı modellerde MacExplorer'ın işlev tuşları Touch Bar'da görünür.") {
                     Button("Klavye Kısayolları…") { ShortcutsWindowController.shared.present(over: nil) }
                 }
             }
         }
+        .onReceive(macNoteStatusPublisher) { _ in macNoteInstalled = MacNoteInstaller.isInstalled }
     }
 
     private func chooseEditor() {
@@ -326,6 +346,10 @@ private struct KeyboardSettings: View {
         panel.prompt = String(localized: "Seç", bundle: .live)
         panel.message = String(localized: "F4 ile dosyaların açılacağı düzenleyiciyi seçin.", bundle: .live)
         if panel.runModal() == .OK, let url = panel.url { editorPath = url.path }
+    }
+
+    private var macNoteStatusPublisher: NotificationCenter.Publisher {
+        NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)
     }
 
     private static func icon(_ app: URL) -> NSImage {

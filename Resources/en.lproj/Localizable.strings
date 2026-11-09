@@ -599,3 +599,12 @@
 "İlk / son öğe" = "First / last item";
 "Bir sayfa yukarı / aşağı" = "One page up / down";
 "Seçimi oraya kadar genişlet" = "Extend selection to there";
+"F3 ve F4 için ücretsiz MacNote++'ı kurun." = "Install the free MacNote++ for F3 and F4.";
+"F3 ve F4 için ücretsiz metin düzenleyici" = "Free text editor for F3 and F4";
+"F3 Önizle" = "F3 View";
+"MacNote++ ile düzenle" = "Edit with MacNote++";
+"MacNote++ kurulamadı." = "MacNote++ could not be installed.";
+"MacNote++ kurulu" = "MacNote++ installed";
+"MacNote++ kurulu değil" = "MacNote++ not installed";
+"MacNote++ salt okunur açar; büyük dosyalar güvenli önizlemeyle açılır" = "MacNote++ opens files read-only; very large files open in a safe preview";
+"MacNote++’ın en son sürümü indiriliyor…" = "Downloading the latest MacNote++…";
