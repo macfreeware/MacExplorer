@@ -20,6 +20,7 @@
 "ad ya da IP adresi" = "ad ya da IP adresi";
 "Ad: %@" = "Ad: %@";
 "Adres" = "Adres";
+"sftp://kullanici@sunucu  ·  smb://nas.local/Paylaşım" = "sftp://kullanici@sunucu  ·  smb://nas.local/Paylaşım";
 "Adres Çubuğu" = "Adres Çubuğu";
 "Adres çubuğu" = "Adres çubuğu";
 "Adı doğru yazdığınızdan emin olun ve yeniden deneyin." = "Adı doğru yazdığınızdan emin olun ve yeniden deneyin.";

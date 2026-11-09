@@ -13,6 +13,7 @@
 "ad ya da IP adresi" = "name or IP address";
 "Ad: %@" = "Name: %@";
 "Adres" = "Address";
+"sftp://kullanici@sunucu  ·  smb://nas.local/Paylaşım" = "sftp://user@server  ·  smb://nas.local/Share";
 "Adres çubuğu" = "Address bar";
 "Adres Çubuğu" = "Address Bar";
 "Adı doğru yazdığınızdan emin olun ve yeniden deneyin." = "Check the spelling and try again.";

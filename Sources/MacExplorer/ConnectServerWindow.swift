@@ -141,7 +141,7 @@ private struct ConnectServerView: View {
 
             Form {
                 Section {
-                    TextField("Adres", text: $model.address, prompt: Text(verbatim: "sftp://kullanici@sunucu  ·  smb://nas.local/Paylaşım"))
+                    TextField("Adres", text: $model.address, prompt: Text("sftp://kullanici@sunucu  ·  smb://nas.local/Paylaşım"))
                         .onSubmit { model.applyAddress() }
                     if model.addressError {
                         Text("Bu adres tanınmadı. sftp://, ftp://, ftps://, smb://, https://, afp:// ya da nfs:// ile başlamalı.")
