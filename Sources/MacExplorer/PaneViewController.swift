@@ -932,6 +932,12 @@ final class PaneViewController: NSViewController {
             other.receive(target, at: other.tabs.count, from: self)
         }
         menu.addItem(.separator())
+        // Bu Mac'teki klasörde Terminal, SFTP'de ssh açılır; FTP'de kabuk, arşivin içinde gerçek klasör yoktur.
+        let isSFTP = target.url.scheme == "sftp"
+        let isLocalFolder = !target.url.isRemote && Archives.file(for: target.url) == nil
+        add(isSFTP ? String(localized: "Terminalde aç (SSH)", bundle: .live) : String(localized: "Terminalde aç", bundle: .live),
+            enabled: isSFTP || isLocalFolder) { [weak self] in self?.openInTerminal(target.url) }
+        menu.addItem(.separator())
         add(String(localized: "Sekmeyi kapat", bundle: .live)) { [weak self] in self?.removeTab(target) }
         add(String(localized: "Diğer sekmeleri kapat", bundle: .live), enabled: tabs.count > 1) { [weak self] in
             guard let self else { return }
@@ -941,6 +947,9 @@ final class PaneViewController: NSViewController {
         }
         return menu
     }
+
+    /// Geliştirme denemesi: etkin sekmenin sağ tık menüsü.
+    func debugTabMenu() -> NSMenu? { tabMenu(for: selectedTab) }
 
     /// Yeni pencere bu sekmelerle açılır.
     func setTabs(_ newTabs: [TabState], selected: Int = 0) {

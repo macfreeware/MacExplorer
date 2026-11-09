@@ -679,6 +679,7 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate, NSToo
             .submenu?.items.first.map { item in _ = item.target?.perform(item.action, with: item) }
         case "menu-item": DebugSnapshot.dump(pane.contextMenu(row: pane.selectionIndexes.first ?? -1))
         case "menu-bg": DebugSnapshot.dump(pane.contextMenu(row: -1))
+        case "menu-tab": pane.debugTabMenu().map { DebugSnapshot.dump($0) }
         case "list?":
             print("Konum:", pane.tab.url.absoluteString, "| başlık:", pane.tab.title, "| öğe:", pane.shown.count)
             for item in pane.shown.prefix(12) {
