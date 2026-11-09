@@ -22,7 +22,7 @@
 </p>
 
 <p align="center">
-  <a href="https://gitlab.com/freeware2/macexplorer/-/releases">Tüm sürümler</a> · <a href="#indirme-ve-kurulum">Kurulum adımları</a> · <a href="#sık-sorulan-sorular">Sık sorulan sorular</a>
+  <a href="https://macfreeware.github.io/tr/macexplorer/">Web sitesi</a> · <a href="https://gitlab.com/freeware2/macexplorer/-/releases">Tüm sürümler</a> · <a href="#indirme-ve-kurulum">Kurulum adımları</a> · <a href="#sık-sorulan-sorular">Sık sorulan sorular</a>
 </p>
 
 > [!warning] MacExplorer'ı ilk açtığınızda macOS engeller. Bu beklenen bir durumdur.

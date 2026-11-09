@@ -22,7 +22,7 @@
 </p>
 
 <p align="center">
-  <a href="https://gitlab.com/freeware2/macexplorer/-/releases">All releases</a> · <a href="#download-and-install">Installation steps</a> · <a href="#faq">FAQ</a>
+  <a href="https://macfreeware.github.io/macexplorer/">Website</a> · <a href="https://gitlab.com/freeware2/macexplorer/-/releases">All releases</a> · <a href="#download-and-install">Installation steps</a> · <a href="#faq">FAQ</a>
 </p>
 
 > [!warning] The first time you open MacExplorer, macOS blocks it. This is expected.
