@@ -1,0 +1,13 @@
+{
+  "pins" : [
+    {
+      "identity" : "maczilla",
+      "kind" : "remoteSourceControl",
+      "location" : "https://gitlab.com/freeware2/maczilla.git",
+      "state" : {
+        "revision" : "ea2bf909aa00b8758f0767617d044d3f959a5428"
+      }
+    }
+  ],
+  "version" : 2
+}

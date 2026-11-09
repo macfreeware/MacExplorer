@@ -1,0 +1,7 @@
+"CFBundleDisplayName" = "MacExplorer";
+"NSHumanReadableCopyright" = "© 2026 Rafet SAPANCI, Mustafa YILDIRIM · GPL-3.0";
+"NSDesktopFolderUsageDescription" = "MacExplorer, Masaüstü klasörünüzdeki dosyaları gösterir ve yönetir.";
+"NSDocumentsFolderUsageDescription" = "MacExplorer, Belgeler klasörünüzdeki dosyaları gösterir ve yönetir.";
+"NSDownloadsFolderUsageDescription" = "MacExplorer, İndirilenler klasörünüzdeki dosyaları gösterir ve yönetir.";
+"NSRemovableVolumesUsageDescription" = "MacExplorer, çıkarılabilir disklerdeki dosyaları gösterir ve yönetir.";
+"NSNetworkVolumesUsageDescription" = "MacExplorer, ağ birimlerindeki dosyaları gösterir ve yönetir.";

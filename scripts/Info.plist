@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>Folder</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>public.folder</string>
+			</array>
+		</dict>
+	</array>
+	<key>CFBundleDisplayName</key>
+	<string>MacExplorer</string>
+	<key>CFBundleExecutable</key>
+	<string>MacExplorer</string>
+	<key>CFBundleIconFile</key>
+	<string>AppIcon</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.freeware2.macexplorer</string>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>tr</string>
+		<string>en</string>
+	</array>
+	<key>CFBundleName</key>
+	<string>MacExplorer</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.3.4</string>
+	<key>CFBundleVersion</key>
+	<string>1</string>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.productivity</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>15.0</string>
+	<key>NSDesktopFolderUsageDescription</key>
+	<string>MacExplorer shows and manages the files in your Desktop folder.</string>
+	<key>NSDocumentsFolderUsageDescription</key>
+	<string>MacExplorer shows and manages the files in your Documents folder.</string>
+	<key>NSDownloadsFolderUsageDescription</key>
+	<string>MacExplorer shows and manages the files in your Downloads folder.</string>
+	<key>NSRemovableVolumesUsageDescription</key>
+	<string>MacExplorer shows and manages the files on removable disks.</string>
+	<key>NSNetworkVolumesUsageDescription</key>
+	<string>MacExplorer shows and manages the files on network volumes.</string>
+	<key>NSHighResolutionCapable</key>
+	<true/>
+	<key>NSHumanReadableCopyright</key>
+	<string>© 2026 Rafet SAPANCI, Mustafa YILDIRIM · GPL-3.0</string>
+	<key>NSPrincipalClass</key>
+	<string>NSApplication</string>
+</dict>
+</plist>

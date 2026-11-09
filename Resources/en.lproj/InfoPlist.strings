@@ -1,0 +1,7 @@
+"CFBundleDisplayName" = "MacExplorer";
+"NSHumanReadableCopyright" = "© 2026 Rafet SAPANCI, Mustafa YILDIRIM · GPL-3.0";
+"NSDesktopFolderUsageDescription" = "MacExplorer shows and manages the files in your Desktop folder.";
+"NSDocumentsFolderUsageDescription" = "MacExplorer shows and manages the files in your Documents folder.";
+"NSDownloadsFolderUsageDescription" = "MacExplorer shows and manages the files in your Downloads folder.";
+"NSRemovableVolumesUsageDescription" = "MacExplorer shows and manages the files on removable disks.";
+"NSNetworkVolumesUsageDescription" = "MacExplorer shows and manages the files on network volumes.";
