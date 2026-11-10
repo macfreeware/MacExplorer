@@ -536,17 +536,28 @@ private struct ThemeCard: View {
 
 /// macOS'un standart sekmeli Ayarlar penceresi (araç çubuğunda simgeli sekmeler).
 @MainActor
-final class SettingsWindowController: NSWindowController {
-    private(set) static var shared = SettingsWindowController()
+final class SettingsWindowController: NSWindowController, NSWindowDelegate {
+    /// Pencere yalnızca açıkken bellekte durur; kapanınca bırakılır, bir sonraki açılışta yeniden kurulur.
+    /// Ayarların kendisi UserDefaults'tadır: otomatik güncelleme denetimi gibi işler bu pencereye bağlı değildir.
+    private static var current: SettingsWindowController?
+    static var shared: SettingsWindowController {
+        if let current { return current }
+        let created = SettingsWindowController()
+        current = created
+        return created
+    }
+
+    /// Pencere şu an açık mı (yoksa kurmadan bakar).
+    static var isOpen: Bool { current?.window?.isVisible == true }
 
     /// Dil değişince: pencere yeni dilde yeniden kurulur; açıksa aynı yerde, aynı sekmeyle açılır.
     static func rebuild() {
-        let old = shared
+        guard let old = current else { return }
         let wasVisible = old.window?.isVisible == true
         let tab = (old.window?.contentViewController as? NSTabViewController)?.selectedTabViewItemIndex ?? 0
         let frame = old.window?.frame
         old.close()
-        shared = SettingsWindowController()
+        current = nil
         guard wasVisible else { return }
         (shared.window?.contentViewController as? NSTabViewController)?.selectedTabViewItemIndex = tab
         if let frame { shared.window?.setFrameTopLeftPoint(NSPoint(x: frame.minX, y: frame.maxY)) }
@@ -577,8 +588,14 @@ final class SettingsWindowController: NSWindowController {
         let window = NSWindow(contentViewController: tabs)
         window.styleMask = [.titled, .closable]
         window.toolbarStyle = .preference
+        window.isReleasedWhenClosed = false
         super.init(window: window)
+        window.delegate = self
         window.center()
+    }
+
+    func windowWillClose(_ notification: Notification) {
+        if Self.current === self { Self.current = nil }
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) kullanılmaz") }

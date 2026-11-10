@@ -174,7 +174,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         SettingsWindowController.rebuild()
         if AboutWindowController.shared.window?.isVisible == true { AboutWindowController.shared.present() }
         if ShortcutsWindowController.shared.window?.isVisible == true { ShortcutsWindowController.shared.present(over: nil) }
-        if SettingsWindowController.shared.window?.isVisible == true {
+        if SettingsWindowController.isOpen {
             SettingsWindowController.shared.window?.makeKeyAndOrderFront(nil)
         } else {
             newKey?.window?.makeKeyAndOrderFront(nil)

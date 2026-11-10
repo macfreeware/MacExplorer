@@ -277,7 +277,19 @@ final class FileIconItemView: NSView {
 /// Simgeler ve küçük resimler (Quick Look ile), boyuta göre önbellekte.
 @MainActor
 enum Thumbnails {
-    private static let cache = NSCache<NSString, NSImage>()
+    /// Üst sınır: fotoğraf klasörlerinde her küçük resim ~1 MB tutar; sınır dolunca en eskiler atılır, gerekirse yeniden üretilir.
+    private static let cache: NSCache<NSString, NSImage> = {
+        let cache = NSCache<NSString, NSImage>()
+        cache.totalCostLimit = 64 * 1024 * 1024
+        return cache
+    }()
+
+    /// Görüntünün bellekteki yaklaşık boyutu (bayt): en büyük temsilinin pikselleri × 4.
+    private static func cost(of image: NSImage, fallbackSize: CGFloat) -> Int {
+        let pixels = image.representations.map { $0.pixelsWide * $0.pixelsHigh }.max() ?? 0
+        let side = Int(fallbackSize * (NSScreen.main?.backingScaleFactor ?? 2))
+        return max(pixels, side * side) * 4
+    }
 
     static func icon(for url: URL, size: CGFloat) -> NSImage {
         if url.isRemote { return RemoteIcons.icon(for: url, size: size) }
@@ -285,7 +297,7 @@ enum Thumbnails {
         if let cached = cache.object(forKey: key) { return cached }
         let image = NSWorkspace.shared.icon(forFile: url.path)
         image.size = NSSize(width: size, height: size)
-        cache.setObject(image, forKey: key)
+        cache.setObject(image, forKey: key, cost: cost(of: image, fallbackSize: size))
         return image
     }
 
@@ -301,7 +313,7 @@ enum Thumbnails {
             guard let image = representation?.nsImage else { return }
             DispatchQueue.main.async {
                 MainActor.assumeIsolated {
-                    cache.setObject(image, forKey: key as NSString)
+                    cache.setObject(image, forKey: key as NSString, cost: cost(of: image, fallbackSize: size))
                     completion(image)
                 }
             }

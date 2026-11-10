@@ -262,7 +262,7 @@ private struct Chip: View {
 }
 
 @MainActor
-final class AboutWindowController: NSWindowController {
+final class AboutWindowController: NSWindowController, NSWindowDelegate {
     static let shared = AboutWindowController()
 
     private init() {
@@ -272,9 +272,18 @@ final class AboutWindowController: NSWindowController {
         window.isMovableByWindowBackground = true
         window.title = String(localized: "MacExplorer Hakkında", bundle: .live)
         super.init(window: window)
+        window.delegate = self
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) kullanılmaz") }
+
+    /// Kapanınca içerik bellekten bırakılır; bir sonraki açılışta yeniden kurulur.
+    func windowWillClose(_ notification: Notification) {
+        DispatchQueue.main.async { [weak self] in
+            guard self?.window?.isVisible == false else { return }
+            self?.window?.contentViewController = nil
+        }
+    }
 
     /// Her açılışta yeniden çizilir: o anki tema ve MacRAR durumu görünsün.
     func present() {

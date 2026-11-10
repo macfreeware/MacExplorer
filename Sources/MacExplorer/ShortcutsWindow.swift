@@ -147,16 +147,25 @@ private struct KeyCaps: View {
 }
 
 @MainActor
-final class ShortcutsWindowController: NSWindowController {
+final class ShortcutsWindowController: NSWindowController, NSWindowDelegate {
     static let shared = ShortcutsWindowController()
 
     private init() {
         let window = NSWindow(contentRect: .zero, styleMask: [.titled, .closable], backing: .buffered, defer: true)
         window.title = String(localized: "Klavye Kısayolları", bundle: .live)
         super.init(window: window)
+        window.delegate = self
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) kullanılmaz") }
+
+    /// Kapanınca içerik bellekten bırakılır; bir sonraki açılışta yeniden kurulur.
+    func windowWillClose(_ notification: Notification) {
+        DispatchQueue.main.async { [weak self] in
+            guard self?.window?.isVisible == false else { return }
+            self?.window?.contentViewController = nil
+        }
+    }
 
     /// Her açılışta seçili klavye düzeniyle; MacExplorer penceresinin ortasında.
     func present(over parent: NSWindow?) {

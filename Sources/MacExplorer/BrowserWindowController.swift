@@ -664,6 +664,10 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate, NSToo
             print("Açık pencereler:", NSApp.windows.filter(\.isVisible).map { $0.title + ($0.parent === window ? " (bağlı)" : "") })
             for (i, w) in NSApp.windows.filter({ $0.isVisible && $0 !== window }).enumerated() { DebugSnapshot.capture(w, name: "during-\(i)") }
         case "settings": SettingsWindowController.shared.showWindow(nil)
+        case "aux?": print("Yardımcı pencereler | ayarlar açık:", SettingsWindowController.isOpen,
+                           "| hakkında içeriği:", AboutWindowController.shared.window?.contentViewController != nil,
+                           "| kısayollar içeriği:", ShortcutsWindowController.shared.window?.contentViewController != nil)
+        case "close-aux": NSApp.windows.filter { $0.isVisible && !($0.windowController is BrowserWindowController) }.forEach { $0.close() }
         case "shortcuts": showShortcuts()
         case "undo": NSApp.sendAction(Selector(("undo:")), to: nil, from: nil)
         case "redo": NSApp.sendAction(Selector(("redo:")), to: nil, from: nil)
