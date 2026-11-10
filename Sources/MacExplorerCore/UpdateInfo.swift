@@ -63,6 +63,13 @@ public enum UpdateInfo {
             && fileManager.isWritableFile(atPath: app.deletingLastPathComponent().path)
     }
 
+    /// Otomatik denetleme zamanı geldi mi: son başarılı denetimden bu yana `interval` geçtiyse. Saat geri alınmışsa
+    /// (son denetim gelecekte görünüyorsa) da denetlenir; yoksa saat düzelene kadar hiç bakılmazdı.
+    public static func isCheckDue(lastCheck: Date, now: Date = Date(), interval: TimeInterval = 24 * 3600) -> Bool {
+        let elapsed = now.timeIntervalSince(lastCheck)
+        return elapsed > interval || elapsed < 0
+    }
+
     /// Noktalı sürümlerin sayısal karşılaştırması: 1.10 > 1.9, 1.2.1 > 1.2.
     public static func isNewer(_ a: String, than b: String) -> Bool {
         let x = a.split(separator: ".").map { Int($0.prefix(while: \.isNumber)) ?? 0 }

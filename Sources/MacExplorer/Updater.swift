@@ -33,12 +33,27 @@ enum Updater {
 
     // MARK: Denetleme
 
-    /// Açılışta: ayar açıksa ve son denetlemeden bu yana bir gün geçtiyse sessizce bakar (yalnızca yeni sürüm varsa sorar).
+    private static var dailyTimer: Timer?
+
+    /// Açılışta ve uygulama açık kaldıkça saatte bir yoklar: ayar açıksa ve son başarılı denetimden bu yana bir gün
+    /// geçtiyse sessizce bakar (yalnızca yeni sürüm varsa sorar). Ayar sonradan açılırsa da bir sonraki yoklamada geçerli olur.
+    /// Bağlantı yoksa son denetim değişmez; bir saat sonra yeniden denenir.
     static func checkAutomatically() {
-        guard Preferences.updateAutoCheck, !RemoteSessions.isDebugRun else { return }
-        let last = Date(timeIntervalSince1970: Preferences.updateLastCheck)
-        guard Date().timeIntervalSince(last) > 24 * 3600 else { return }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 5) { check(userInitiated: false) }
+        guard !RemoteSessions.isDebugRun else { return }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5) { checkIfDue() }
+        guard dailyTimer == nil else { return }
+        let timer = Timer(timeInterval: 3600, repeats: true) { _ in
+            MainActor.assumeIsolated { checkIfDue() }
+        }
+        timer.tolerance = 600   // macOS yoklamayı başka uyanmalarla birleştirebilsin
+        RunLoop.main.add(timer, forMode: .common)
+        dailyTimer = timer
+    }
+
+    private static func checkIfDue() {
+        guard Preferences.updateAutoCheck,
+              UpdateInfo.isCheckDue(lastCheck: Date(timeIntervalSince1970: Preferences.updateLastCheck)) else { return }
+        check(userInitiated: false)
     }
 
     enum Outcome {

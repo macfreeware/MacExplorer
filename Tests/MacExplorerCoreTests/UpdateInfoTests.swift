@@ -66,6 +66,15 @@ final class UpdateInfoTests: XCTestCase {
         XCTAssertFalse(UpdateInfo.isNewer("1.2.0", than: "1.3"))
     }
 
+    func testCheckDue() {
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+        XCTAssertTrue(UpdateInfo.isCheckDue(lastCheck: Date(timeIntervalSince1970: 0), now: now))      // hiç denetlenmedi
+        XCTAssertTrue(UpdateInfo.isCheckDue(lastCheck: now.addingTimeInterval(-25 * 3600), now: now))
+        XCTAssertFalse(UpdateInfo.isCheckDue(lastCheck: now.addingTimeInterval(-23 * 3600), now: now))
+        XCTAssertFalse(UpdateInfo.isCheckDue(lastCheck: now, now: now))
+        XCTAssertTrue(UpdateInfo.isCheckDue(lastCheck: now.addingTimeInterval(3600), now: now))       // saat geri alındı
+    }
+
     func testChecksum() {
         let hex = String(repeating: "aB", count: 32)
         XCTAssertEqual(UpdateInfo.parseChecksum("\(hex)  MacExplorer.zip\n"), hex.lowercased())
