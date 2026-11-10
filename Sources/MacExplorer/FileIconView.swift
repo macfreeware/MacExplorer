@@ -297,7 +297,9 @@ enum Thumbnails {
         if let cached = cache.object(forKey: key) { return cached }
         let image = NSWorkspace.shared.icon(forFile: url.path)
         image.size = NSSize(width: size, height: size)
-        cache.setObject(image, forKey: key, cost: cost(of: image, fallbackSize: size))
+        // Sistem simgesi 2048 px'e kadar temsil taşır ama yalnızca çizildiği boyutta yer tutar; maliyet o boyuttan.
+        let side = Int(size * (NSScreen.main?.backingScaleFactor ?? 2))
+        cache.setObject(image, forKey: key, cost: side * side * 4)
         return image
     }
 

@@ -150,7 +150,12 @@ final class TabState {
 /// Dosya simgeleri (16 pt), yola göre önbellekte.
 @MainActor
 enum IconCache {
-    private static let cache = NSCache<NSString, NSImage>()
+    /// Üst sınır: klasörlerde gezdikçe her dosya için bir simge birikmesin; dolunca en eskiler atılır.
+    private static let cache: NSCache<NSString, NSImage> = {
+        let cache = NSCache<NSString, NSImage>()
+        cache.countLimit = 2000
+        return cache
+    }()
 
     static func icon(for url: URL) -> NSImage {
         if url.isRemote { return RemoteIcons.icon(for: url, size: 16) }
