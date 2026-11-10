@@ -197,6 +197,13 @@ final class FileIconItem: NSCollectionViewItem {
         didSet { (view as? FileIconItemView)?.isSelectedItem = isSelected }
     }
 
+    /// Havuza dönen öğe eski resmi tutmasın: büyük küçük resimler görünüm küçülünce de bellekte kalıyordu.
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        url = nil
+        imageView?.image = nil
+    }
+
     override func loadView() {
         let itemView = FileIconItemView()
         let image = NSImageView()
@@ -278,11 +285,16 @@ final class FileIconItemView: NSView {
 @MainActor
 enum Thumbnails {
     /// Üst sınır: fotoğraf klasörlerinde her küçük resim ~1 MB tutar; sınır dolunca en eskiler atılır, gerekirse yeniden üretilir.
-    private static let cache: NSCache<NSString, NSImage> = {
+    /// Her simge boyutunun kendi önbelleği var; kullanılmayan boyut `keepOnly(sizes:)` ile tümden atılır.
+    private static var caches: [Int: NSCache<NSString, NSImage>] = [:]
+
+    private static func cache(for size: CGFloat) -> NSCache<NSString, NSImage> {
+        if let cache = caches[Int(size)] { return cache }
         let cache = NSCache<NSString, NSImage>()
         cache.totalCostLimit = 64 * 1024 * 1024
+        caches[Int(size)] = cache
         return cache
-    }()
+    }
 
     /// Görüntünün bellekteki yaklaşık boyutu (bayt): en büyük temsilinin pikselleri × 4.
     private static func cost(of image: NSImage, fallbackSize: CGFloat) -> Int {
@@ -293,6 +305,7 @@ enum Thumbnails {
 
     static func icon(for url: URL, size: CGFloat) -> NSImage {
         if url.isRemote { return RemoteIcons.icon(for: url, size: size) }
+        let cache = cache(for: size)
         let key = "icon|\(Int(size))|\(url.path)" as NSString
         if let cached = cache.object(forKey: key) { return cached }
         let image = NSWorkspace.shared.icon(forFile: url.path)
@@ -306,6 +319,7 @@ enum Thumbnails {
     /// Dosyanın içeriğinden küçük resim (resim, PDF, video …); yoksa çağrılmaz, simge kalır.
     static func thumbnail(for url: URL, size: CGFloat, completion: @escaping (NSImage) -> Void) {
         guard !url.isRemote else { return }   // sunucudaki dosyanın içeriği indirilmeden okunamaz
+        let cache = cache(for: size)
         let key = "thumb|\(Int(size))|\(url.path)"
         if let cached = cache.object(forKey: key as NSString) { return completion(cached) }
         let scale = NSScreen.main?.backingScaleFactor ?? 2
@@ -322,5 +336,16 @@ enum Thumbnails {
         }
     }
 
-    static func clear() { cache.removeAllObjects() }
+    static func clear() {
+        caches.values.forEach { $0.removeAllObjects() }
+        caches.removeAll()
+    }
+
+    /// Yalnızca açık sekmelerde kullanılan boyutların resimleri kalır (ör. Çok büyük simgelerden Liste'ye geçince).
+    static func keepOnly(sizes: Set<Int>) {
+        for size in caches.keys where !sizes.contains(size) {
+            caches[size]?.removeAllObjects()
+            caches[size] = nil
+        }
+    }
 }

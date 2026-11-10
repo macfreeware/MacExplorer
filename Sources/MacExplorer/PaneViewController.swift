@@ -415,6 +415,14 @@ final class PaneViewController: NSViewController {
             layout.invalidateLayout()
         }
         scrollView.hasHorizontalScroller = mode == .details || mode == .list
+        Self.trimThumbnails()
+    }
+
+    /// Hiçbir pencerenin görünen sekmesinde kullanılmayan simge boyutlarının önbelleği boşaltılır.
+    private static func trimThumbnails() {
+        let panes = NSApp.windows.compactMap { $0.windowController as? BrowserWindowController }
+            .flatMap { [$0.workspace.left, $0.workspace.right] }
+        Thumbnails.keepOnly(sizes: Set(panes.map { Int($0.tab.viewMode.iconSize) }))
     }
 
     /// Görünen liste: Ayrıntılar'da tablo, diğerlerinde ızgara.
