@@ -66,6 +66,44 @@ final class UpdateInfoTests: XCTestCase {
         XCTAssertFalse(UpdateInfo.isNewer("1.2.0", than: "1.3"))
     }
 
+    func testHighlights() {
+        let notes = """
+        Apple Silicon ve Intel, macOS 15 ve üstü.
+
+        ## Kurulum
+
+        1.3.0 ve sonrası kuruluysa güncellemeyi uygulama içinden alabilirsiniz.
+
+        ```
+        xattr -dr com.apple.quarantine /Applications/MacExplorer.app
+        ```
+
+        ## 1.3.9'dan bu yana
+
+        - **Yeni temalar**: Windows 11 ve Kutup.
+        - **Menü simgeleri**: Kes, Kopyala.
+
+        ## Denenecekler
+
+        - Temaları değiştirmek.
+
+        ---
+
+        Apple Silicon and Intel, macOS 15 or later. Unzip and move the app. New since 1.3.9: five new themes and menu icons.
+        """
+        let tr = UpdateInfo.highlights(from: notes, english: false)
+        XCTAssertTrue(tr.hasPrefix("## 1.3.9'dan bu yana"))
+        XCTAssertTrue(tr.contains("**Yeni temalar**"))
+        XCTAssertFalse(tr.contains("Kurulum"))
+        XCTAssertFalse(tr.contains("xattr"))
+        XCTAssertFalse(tr.contains("Denenecekler"))
+        XCTAssertFalse(tr.contains("Apple Silicon"))
+        XCTAssertEqual(UpdateInfo.highlights(from: notes, english: true), "New since 1.3.9: five new themes and menu icons.")
+        // Beklenen biçim yoksa not olduğu gibi kalır
+        XCTAssertEqual(UpdateInfo.highlights(from: "Küçük düzeltmeler.", english: false), "Küçük düzeltmeler.")
+        XCTAssertEqual(UpdateInfo.highlights(from: "Küçük düzeltmeler.", english: true), "Küçük düzeltmeler.")
+    }
+
     func testCheckDue() {
         let now = Date(timeIntervalSince1970: 1_800_000_000)
         XCTAssertTrue(UpdateInfo.isCheckDue(lastCheck: Date(timeIntervalSince1970: 0), now: now))      // hiç denetlenmedi

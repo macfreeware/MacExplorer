@@ -52,6 +52,14 @@ enum DebugSnapshot {
         save(window, to: URL(fileURLWithPath: dir).appendingPathComponent("\(name).png"))
     }
 
+    /// Pencereye bağlı olmayan bir görünümü kaydeder.
+    static func saveView(_ view: NSView, name: String) {
+        guard let dir = ProcessInfo.processInfo.environment["MACEXPLORER_SNAPSHOT"],
+              let rep = view.bitmapImageRepForCachingDisplay(in: view.bounds) else { return }
+        view.cacheDisplay(in: view.bounds, to: rep)
+        try? rep.representation(using: .png, properties: [:])?.write(to: URL(fileURLWithPath: dir).appendingPathComponent("\(name).png"))
+    }
+
     private static func save(_ window: NSWindow, to url: URL) {
         guard let view = window.contentView?.superview,
               let rep = view.bitmapImageRepForCachingDisplay(in: view.bounds) else { return }

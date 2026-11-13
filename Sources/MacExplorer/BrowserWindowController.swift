@@ -751,6 +751,14 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate, NSToo
                 NSApp.sendAction(Selector(String(step.dropFirst(12))), to: nil, from: nil)
             }
             if step == "update-check" { Updater.check(userInitiated: true) }
+            // Güncelleme penceresindeki notları pencere açmadan görüntü olarak kaydeder: update-notes:<dosya>
+            if step.hasPrefix("update-notes:"), let notes = try? String(contentsOfFile: String(step.dropFirst(13)), encoding: .utf8) {
+                let text = NSTextView(frame: NSRect(x: 0, y: 0, width: 420, height: 240))
+                text.textContainerInset = NSSize(width: 6, height: 6)
+                text.textStorage?.setAttributedString(Updater.formattedHighlights(notes))
+                text.appearance = window?.effectiveAppearance
+                DebugSnapshot.saveView(text, name: "update-notes")
+            }
             if step == "update-install" { Updater.check(userInitiated: true, installWithoutAsking: true) }
             if step == "marks?" { print("Seçili:", pane.debugSelectedNames) }
             // Açık uyarıda başlığı verilen düğmeye basar: press:Zorla Çıkar

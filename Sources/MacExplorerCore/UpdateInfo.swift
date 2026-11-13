@@ -70,6 +70,40 @@ public enum UpdateInfo {
         return elapsed > interval || elapsed < 0
     }
 
+    /// Güncelleme penceresinde gösterilecek kısım: sürüm notundan yalnızca yenilikler.
+    /// Notlar "Türkçe bölümler --- English paragraph" biçimindedir. Türkçede baştaki gereksinim satırı ile "Kurulum",
+    /// "Denenecekler" bölümleri atılır, kalan "## …" bölümleri döner. İngilizcede paragraftaki "New since …" cümlesinden
+    /// başlanır. Beklenen biçim bulunmazsa notun ilgili dili olduğu gibi döner.
+    public static func highlights(from notes: String, english: Bool) -> String {
+        let parts = notes.replacingOccurrences(of: "\r\n", with: "\n").components(separatedBy: "\n---\n")
+        let turkish = parts[0].trimmingCharacters(in: .whitespacesAndNewlines)
+        let englishPart = parts.count > 1 ? parts[1...].joined(separator: "\n---\n").trimmingCharacters(in: .whitespacesAndNewlines) : ""
+
+        if english, !englishPart.isEmpty {
+            if let range = englishPart.range(of: "New since") { return String(englishPart[range.lowerBound...]) }
+            return englishPart
+        }
+
+        let skipped: Set<String> = ["kurulum", "denenecekler", "installation"]
+        var kept: [String] = []
+        var current: [String]?
+        func flush() {
+            guard let section = current, let title = section.first else { return }
+            let name = title.dropFirst(3).trimmingCharacters(in: .whitespaces).lowercased()
+            if !skipped.contains(name) { kept.append(section.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)) }
+        }
+        for line in turkish.components(separatedBy: "\n") {
+            if line.hasPrefix("## ") {
+                flush()
+                current = [line]
+            } else {
+                current?.append(line)
+            }
+        }
+        flush()
+        return kept.isEmpty ? turkish : kept.joined(separator: "\n\n")
+    }
+
     /// Noktalı sürümlerin sayısal karşılaştırması: 1.10 > 1.9, 1.2.1 > 1.2.
     public static func isNewer(_ a: String, than b: String) -> Bool {
         let x = a.split(separator: ".").map { Int($0.prefix(while: \.isNumber)) ?? 0 }

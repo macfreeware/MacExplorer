@@ -113,6 +113,45 @@ enum Updater {
 
     // MARK: Sorma
 
+    /// Yenilikler, Markdown'ın kullandığımız kısmıyla biçimli: "## başlık" kalın, "- madde" imli, **kalın** ve `kod`.
+    static func formattedHighlights(_ notes: String) -> NSAttributedString {
+        let english = LiveLanguage.locale.language.languageCode == .english
+        let text = UpdateInfo.highlights(from: notes, english: english)
+        let body = NSFont.systemFont(ofSize: 12)
+        let out = NSMutableAttributedString()
+        func inline(_ line: String, font: NSFont) -> NSAttributedString {
+            let options = AttributedString.MarkdownParsingOptions(interpretedSyntax: .inlineOnlyPreservingWhitespace)
+            let parsed = (try? NSMutableAttributedString(markdown: line, options: options)) ?? NSMutableAttributedString(string: line)
+            let whole = NSRange(location: 0, length: parsed.length)
+            parsed.enumerateAttribute(.font, in: whole) { value, range, _ in
+                let traits = (value as? NSFont)?.fontDescriptor.symbolicTraits ?? []
+                parsed.addAttribute(.font, value: traits.contains(.bold) ? NSFont.boldSystemFont(ofSize: font.pointSize) : font, range: range)
+            }
+            parsed.enumerateAttribute(.inlinePresentationIntent, in: whole) { value, range, _ in
+                guard let raw = value as? UInt, InlinePresentationIntent(rawValue: raw).contains(.code) else { return }
+                parsed.addAttribute(.font, value: NSFont.monospacedSystemFont(ofSize: font.pointSize - 1, weight: .regular), range: range)
+            }
+            parsed.addAttribute(.foregroundColor, value: NSColor.labelColor, range: whole)
+            return parsed
+        }
+        for (index, raw) in text.components(separatedBy: "\n").enumerated() {
+            if index > 0 { out.append(NSAttributedString(string: "\n")) }
+            if raw.hasPrefix("## ") {
+                out.append(inline(String(raw.dropFirst(3)), font: .boldSystemFont(ofSize: 13)))
+            } else if raw.hasPrefix("- ") {
+                let item = NSMutableAttributedString(string: "•  ", attributes: [.font: body, .foregroundColor: NSColor.labelColor])
+                item.append(inline(String(raw.dropFirst(2)), font: body))
+                let style = NSMutableParagraphStyle()
+                style.headIndent = 14
+                item.addAttribute(.paragraphStyle, value: style, range: NSRange(location: 0, length: item.length))
+                out.append(item)
+            } else {
+                out.append(inline(raw, font: body))
+            }
+        }
+        return out
+    }
+
     static func offer(_ release: UpdateRelease) {
         if RemoteSessions.isDebugRun { return FileHandle.standardError.write(Data("Güncelleme sunuluyor: \(release.version)\n".utf8)) }
         let alert = NSAlert()
@@ -126,8 +165,7 @@ enum Updater {
             text.isEditable = false
             text.autoresizingMask = [.width]
             text.textContainerInset = NSSize(width: 6, height: 6)
-            text.font = .systemFont(ofSize: 12)
-            text.string = release.notes
+            text.textStorage?.setAttributedString(Self.formattedHighlights(release.notes))
             scroll.documentView = text
             alert.accessoryView = scroll
         }
