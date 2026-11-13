@@ -39,7 +39,8 @@ enum DebugSnapshot {
         for item in menu.items {
             let pad = String(repeating: "    ", count: depth)
             print(item.isSeparatorItem ? pad + "────" : pad + item.title + (item.isEnabled ? "" : "  (kapalı)") + (item.state == .on ? "  ✓" : "")
-                  + (item.image.map { "  [simge \(Int($0.size.width))pt]" } ?? ""))
+                  + (item.image.map { "  [simge \(Int($0.size.width))pt]" } ?? "")
+                  + (item.responds(to: Selector(("preferredImageVisibility"))) && (item.value(forKey: "preferredImageVisibility") as? Int) == 1 ? " görünür" : ""))
             if let sub = item.submenu { dump(sub, depth: depth + 1) }
         }
         print("")

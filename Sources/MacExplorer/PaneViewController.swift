@@ -928,24 +928,25 @@ final class PaneViewController: NSViewController {
         guard tabs.indices.contains(index) else { return nil }
         let target = tabs[index]
         let menu = NSMenu()
+        defer { MenuSymbol.showAll(in: menu) }
         menu.autoenablesItems = false
-        func add(_ title: String, enabled: Bool = true, _ action: @escaping () -> Void) {
-            let item = ClosureMenuItem(title: title, action: action)
+        func add(_ title: String, _ symbol: String, enabled: Bool = true, _ action: @escaping () -> Void) {
+            let item = ClosureMenuItem(title: title, symbol: symbol, action: action)
             item.isEnabled = enabled
             menu.addItem(item)
         }
-        add(String(localized: "Yeni sekme", bundle: .live)) { [weak self] in self?.newTab() }
-        add(String(localized: "Sekmeyi çoğalt", bundle: .live)) { [weak self] in
+        add(String(localized: "Yeni sekme", bundle: .live), "plus") { [weak self] in self?.newTab() }
+        add(String(localized: "Sekmeyi çoğalt", bundle: .live), "plus.square.on.square") { [weak self] in
             guard let self, let i = self.tabs.firstIndex(where: { $0 === target }) else { return }
             self.selectTab(i)
             self.newTab(url: target.url)
         }
         menu.addItem(.separator())
-        add(String(localized: "Sekmeyi yeni pencerede aç", bundle: .live)) { [weak self] in
+        add(String(localized: "Sekmeyi yeni pencerede aç", bundle: .live), "macwindow.badge.plus") { [weak self] in
             self?.openTabInNewWindow(target)
         }
         let other = delegate?.otherPane(of: self)
-        add(String(localized: "Sekmeyi diğer panele taşı", bundle: .live), enabled: other != nil) { [weak self] in
+        add(String(localized: "Sekmeyi diğer panele taşı", bundle: .live), "rectangle.split.2x1", enabled: other != nil) { [weak self] in
             guard let self, let other else { return }
             if target === self.tab { target.selectedURLs = self.selectedURLs }
             other.receive(target, at: other.tabs.count, from: self)
@@ -955,10 +956,10 @@ final class PaneViewController: NSViewController {
         let isSFTP = target.url.scheme == "sftp"
         let isLocalFolder = !target.url.isRemote && Archives.file(for: target.url) == nil
         add(isSFTP ? String(localized: "Terminalde aç (SSH)", bundle: .live) : String(localized: "Terminalde aç", bundle: .live),
-            enabled: isSFTP || isLocalFolder) { [weak self] in self?.openInTerminal(target.url) }
+            "apple.terminal", enabled: isSFTP || isLocalFolder) { [weak self] in self?.openInTerminal(target.url) }
         menu.addItem(.separator())
-        add(String(localized: "Sekmeyi kapat", bundle: .live)) { [weak self] in self?.removeTab(target) }
-        add(String(localized: "Diğer sekmeleri kapat", bundle: .live), enabled: tabs.count > 1) { [weak self] in
+        add(String(localized: "Sekmeyi kapat", bundle: .live), "xmark") { [weak self] in self?.removeTab(target) }
+        add(String(localized: "Diğer sekmeleri kapat", bundle: .live), "xmark.square", enabled: tabs.count > 1) { [weak self] in
             guard let self else { return }
             self.tabs = [target]
             self.selectedTab = 0
@@ -2108,10 +2109,12 @@ extension PaneViewController: NSCollectionViewDataSource, NSCollectionViewDelega
 final class ClosureMenuItem: NSMenuItem {
     private let handler: () -> Void
 
-    init(title: String, action handler: @escaping () -> Void) {
+    init(title: String, symbol: String? = nil, action handler: @escaping () -> Void) {
         self.handler = handler
         super.init(title: title, action: #selector(run), keyEquivalent: "")
         target = self
+        image = symbol.flatMap { MenuSymbol.image($0) }
+        MenuSymbol.show(self)
     }
 
     required init(coder: NSCoder) { fatalError("init(coder:) kullanılmaz") }

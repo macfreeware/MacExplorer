@@ -288,18 +288,19 @@ final class SidebarViewController: NSViewController, NSOutlineViewDataSource, NS
     private func contextMenu(row: Int) -> NSMenu? {
         guard row >= 0, let node = outline.item(atRow: row) as? SidebarNode else { return nil }
         let menu = NSMenu()
+        defer { MenuSymbol.showAll(in: menu) }
         if let server = node.server {
-            menu.addItem(ClosureMenuItem(title: String(localized: "Bağlan", bundle: .live)) { [weak self] in self?.onConnect?(server) })
-            menu.addItem(ClosureMenuItem(title: String(localized: "Düzenle…", bundle: .live)) { [weak self] in self?.onEditServer?(server) })
+            menu.addItem(ClosureMenuItem(title: String(localized: "Bağlan", bundle: .live), symbol: "network") { [weak self] in self?.onConnect?(server) })
+            menu.addItem(ClosureMenuItem(title: String(localized: "Düzenle…", bundle: .live), symbol: "pencil") { [weak self] in self?.onEditServer?(server) })
             menu.addItem(.separator())
-            menu.addItem(ClosureMenuItem(title: String(localized: "Bağlantıyı Sil…", bundle: .live)) { [weak self] in self?.onDeleteServer?(server) })
+            menu.addItem(ClosureMenuItem(title: String(localized: "Bağlantıyı Sil…", bundle: .live), symbol: "trash") { [weak self] in self?.onDeleteServer?(server) })
         } else if node.isConnectAction {
-            menu.addItem(ClosureMenuItem(title: String(localized: "Sunucuya Bağlan…", bundle: .live)) { [weak self] in self?.onShowConnect?() })
+            menu.addItem(ClosureMenuItem(title: String(localized: "Sunucuya Bağlan…", bundle: .live), symbol: "plus.circle") { [weak self] in self?.onShowConnect?() })
         } else if let url = node.url {
-            menu.addItem(ClosureMenuItem(title: String(localized: "Aç", bundle: .live)) { [weak self] in self?.onNavigate?(url) })
+            menu.addItem(ClosureMenuItem(title: String(localized: "Aç", bundle: .live), symbol: "folder") { [weak self] in self?.onNavigate?(url) })
             if node.isEjectable {
                 menu.addItem(.separator())
-                menu.addItem(ClosureMenuItem(title: String(localized: "Çıkar", bundle: .live)) { [weak self] in self?.onEject?(url) })
+                menu.addItem(ClosureMenuItem(title: String(localized: "Çıkar", bundle: .live), symbol: "eject") { [weak self] in self?.onEject?(url) })
             }
         } else {
             return nil

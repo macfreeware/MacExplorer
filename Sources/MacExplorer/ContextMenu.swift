@@ -6,6 +6,7 @@ import MacExplorerCore
 extension PaneViewController {
     func contextMenu(row: Int) -> NSMenu {
         let menu = NSMenu()
+        defer { MenuSymbol.showAll(in: menu) }   // macOS 27 simgeleri ancak açıkça istenince gösterir
         menu.autoenablesItems = false
         if isArchive {
             if row >= 0, !selectedItems.isEmpty { buildArchiveItemMenu(menu, items: selectedItems) } else { buildArchiveBackgroundMenu(menu) }
@@ -44,6 +45,7 @@ extension PaneViewController {
         if !files.isEmpty, folders.isEmpty {
             let openWith = add(menu, String(localized: "Birlikte aç", bundle: .live), nil)
             openWith.submenu = openWithMenu(for: files.map(\.url))
+            openWith.setSymbol("arrow.up.forward.app")
         }
         add(menu, String(localized: "Hızlı Bakış", bundle: .live), #selector(menuQuickLook))
         if !files.isEmpty, let editor = Preferences.editorApp {
@@ -71,10 +73,12 @@ extension PaneViewController {
             add(sub, String(localized: "DMG (Mac, sıkıştırılmış)", bundle: .live), #selector(menuMakeDMG)).image =
                 NSImage(systemSymbolName: "externaldrive", accessibilityDescription: nil)
             image.submenu = sub
+            image.setSymbol("opticaldisc")
         }
         add(menu, String(localized: "Paylaş…", bundle: .live), #selector(menuShare))
         let sendTo = add(menu, String(localized: "Gönder", bundle: .live), nil)
         sendTo.submenu = sendToMenu()
+        sendTo.setSymbol("paperplane")
         menu.addItem(.separator())
 
         add(menu, String(localized: "Kes", bundle: .live), #selector(menuCut))
@@ -123,8 +127,10 @@ extension PaneViewController {
     private func buildRemoteBackgroundMenu(_ menu: NSMenu) {
         let viewItem = add(menu, String(localized: "Görünüm", bundle: .live), nil)
         viewItem.submenu = viewModeMenu()
+        viewItem.setSymbol("square.grid.2x2")
         let sort = add(menu, String(localized: "Sıralama ölçütü", bundle: .live), nil)
         sort.submenu = sortMenu()
+        sort.setSymbol("arrow.up.arrow.down")
         add(menu, String(localized: "Yenile", bundle: .live), #selector(menuRefresh))
         add(menu, String(localized: "Gizli öğeleri göster", bundle: .live), #selector(menuToggleHidden)).state = Preferences.showHidden ? .on : .off
         menu.addItem(.separator())
@@ -138,6 +144,7 @@ extension PaneViewController {
         add(newMenu, String(localized: "Metin Belgesi", bundle: .live), #selector(menuNewTextDocument)).image =
             NSImage(systemSymbolName: "doc.text", accessibilityDescription: nil)
         new.submenu = newMenu
+        new.setSymbol("plus.circle")
         menu.addItem(.separator())
         if tab.url.scheme == "sftp" {
             add(menu, String(localized: "Terminalde aç (SSH)", bundle: .live), #selector(menuOpenInTerminal))
@@ -164,8 +171,10 @@ extension PaneViewController {
     private func buildArchiveBackgroundMenu(_ menu: NSMenu) {
         let viewItem = add(menu, String(localized: "Görünüm", bundle: .live), nil)
         viewItem.submenu = viewModeMenu()
+        viewItem.setSymbol("square.grid.2x2")
         let sort = add(menu, String(localized: "Sıralama ölçütü", bundle: .live), nil)
         sort.submenu = sortMenu()
+        sort.setSymbol("arrow.up.arrow.down")
         add(menu, String(localized: "Gizli öğeleri göster", bundle: .live), #selector(menuToggleHidden)).state = Preferences.showHidden ? .on : .off
         menu.addItem(.separator())
         add(menu, String(localized: "Tümünü ayıkla…", bundle: .live), #selector(menuExtractAll))
@@ -379,8 +388,10 @@ extension PaneViewController {
     private func buildBackgroundMenu(_ menu: NSMenu) {
         let viewItem = add(menu, String(localized: "Görünüm", bundle: .live), nil)
         viewItem.submenu = viewModeMenu()
+        viewItem.setSymbol("square.grid.2x2")
         let sort = add(menu, String(localized: "Sıralama ölçütü", bundle: .live), nil)
         sort.submenu = sortMenu()
+        sort.setSymbol("arrow.up.arrow.down")
         add(menu, String(localized: "Yenile", bundle: .live), #selector(menuRefresh))
         // Windows: Görünüm ▸ Göster ▸ Gizli öğeler
         add(menu, String(localized: "Gizli öğeleri göster", bundle: .live), #selector(menuToggleHidden)).state = Preferences.showHidden ? .on : .off
@@ -398,6 +409,7 @@ extension PaneViewController {
         add(newMenu, String(localized: "Metin Belgesi", bundle: .live), #selector(menuNewTextDocument)).image =
             NSImage(systemSymbolName: "doc.text", accessibilityDescription: nil)
         new.submenu = newMenu
+        new.setSymbol("plus.circle")
         menu.addItem(.separator())
 
         add(menu, String(localized: "Terminalde aç", bundle: .live), #selector(menuOpenInTerminal))
@@ -451,6 +463,8 @@ extension PaneViewController {
     private func add(_ menu: NSMenu, _ title: String, _ action: Selector?) -> NSMenuItem {
         let item = NSMenuItem(title: title, action: action, keyEquivalent: "")
         item.target = self
+        item.image = MenuSymbol.image(for: action)
+        MenuSymbol.show(item)
         menu.addItem(item)
         return item
     }
