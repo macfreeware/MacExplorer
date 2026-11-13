@@ -46,6 +46,11 @@ struct Theme: Identifiable, Equatable {
         case "aubergine": return String(localized: "Patlıcan", bundle: .live)
         case "olive": return String(localized: "Zeytin", bundle: .live)
         case "contrast": return String(localized: "Yüksek Karşıtlık", bundle: .live)
+        case "windows11": return "Windows 11"
+        case "windows10": return String(localized: "Windows 10 Klasik", bundle: .live)
+        case "nightReading": return String(localized: "Gece Okuma", bundle: .live)
+        case "polar": return String(localized: "Kutup", bundle: .live)
+        case "colorSafe": return String(localized: "Renk Körü Dostu", bundle: .live)
         default: return String(localized: "Sistem", bundle: .live)
         }
     }
@@ -55,6 +60,42 @@ struct Theme: Identifiable, Equatable {
     var stripColor: NSColor { strip ?? .underPageBackgroundColor }
     var chromeColor: NSColor { chrome ?? .controlBackgroundColor }
     var contentColor: NSColor { content ?? .controlBackgroundColor }
+    /// Koyu görünümde başlık ve araç çubuğunun altındaki bant: pencerenin tutulacak yeri arka plandan ve listeden ayrılsın.
+    /// Vurgu tonu, macOS'un soluk gri altyazısı (klasör yolu) bant üstünde okunur kalacak kadar verilir (karşıtlık ≥ 4,5:1);
+    /// zemini zaten açık olan temalarda bant gerektiği kadar koyulaştırılır.
+    var titleBandColor: NSColor {
+        let chrome = chromeColor, accent = accentColor
+        return NSColor(name: nil) { appearance in
+            let base = chrome.resolved(for: appearance).usingColorSpace(.sRGB) ?? chrome
+            guard appearance.isDark else { return base }
+            let tint = accent.resolved(for: appearance).usingColorSpace(.sRGB) ?? accent
+            for step in stride(from: 11, through: 0, by: -1) {
+                let tinted = base.blended(withFraction: CGFloat(step) * 0.02, of: tint) ?? base
+                let band = tinted.blended(withFraction: 0.03, of: .white) ?? tinted
+                if Self.subtitleIsReadable(on: band) { return band }
+            }
+            var band = base
+            for _ in 0..<10 where !Self.subtitleIsReadable(on: band) {
+                band = band.blended(withFraction: 0.1, of: .black) ?? band
+            }
+            return band
+        }
+    }
+
+    /// Koyu görünümde ikincil yazı rengi yaklaşık %55 saydam beyazdır; zeminle karışmış hâlinin karşıtlığı WCAG'nin 4,5:1'ine bakılır.
+    private static func subtitleIsReadable(on band: NSColor) -> Bool { subtitleContrast(on: band) >= 4.5 }
+
+    static func subtitleContrast(on band: NSColor) -> CGFloat {
+        guard let text = band.blended(withFraction: 0.55, of: .white) else { return 21 }
+        let a = luminance(text), b = luminance(band)
+        return (max(a, b) + 0.05) / (min(a, b) + 0.05)
+    }
+
+    private static func luminance(_ color: NSColor) -> CGFloat {
+        guard let c = color.usingColorSpace(.sRGB) else { return 0 }
+        func channel(_ v: CGFloat) -> CGFloat { v <= 0.03928 ? v / 12.92 : pow((v + 0.055) / 1.055, 2.4) }
+        return 0.2126 * channel(c.redComponent) + 0.7152 * channel(c.greenComponent) + 0.0722 * channel(c.blueComponent)
+    }
 
     static let system = Theme(id: "system", accent: nil, strip: nil, chrome: nil, content: nil, sidebarTint: nil)
 
@@ -74,6 +115,15 @@ struct Theme: Identifiable, Equatable {
         make("olive", accent: (0x6B7F1A, 0xB5C95A), strip: (0xE7EBD6, 0x191C0E), chrome: (0xF8FAF1, 0x222615), content: (0xFFFFFF, 0x12140A)),
         // Görme kolaylığı: saf siyah / beyaz zemin, güçlü mavi vurgu
         make("contrast", accent: (0x0040DD, 0x409CFF), strip: (0xE0E0E0, 0x000000), chrome: (0xFFFFFF, 0x0A0A0A), content: (0xFFFFFF, 0x000000)),
+        // Windows Gezgini görünümleri: Windows 11 (yumuşak gri, açık mavi vurgu) ve Windows 10 (düz beyaz, klasik mavi)
+        make("windows11", accent: (0x005FB8, 0x60CDFF), strip: (0xF3F3F3, 0x202020), chrome: (0xF9F9F9, 0x2B2B2B), content: (0xFFFFFF, 0x1C1C1C)),
+        make("windows10", accent: (0x0078D7, 0x3A96DD), strip: (0xF0F0F0, 0x2B2B2B), chrome: (0xFFFFFF, 0x333333), content: (0xFFFFFF, 0x191919)),
+        // Gece okuma: mavi ışığı az, sıcak kâğıt ve kahve tonları
+        make("nightReading", accent: (0xB35C1E, 0xE0A15A), strip: (0xEFE3CF, 0x231A12), chrome: (0xF8EFE0, 0x2B2017), content: (0xFBF4E8, 0x1A140E)),
+        // Kutup: soğuk gri-mavi, düşük karşıtlıklı
+        make("polar", accent: (0x5E81AC, 0x88C0D0), strip: (0xE5E9F0, 0x2E3440), chrome: (0xECEFF4, 0x3B4252), content: (0xF8F9FB, 0x272C36)),
+        // Renk körlüğüne uygun: kırmızı-yeşil ayrımına dayanmayan mavi vurgu (Okabe-Ito paleti), nötr zeminler
+        make("colorSafe", accent: (0x0072B2, 0x56B4E9), strip: (0xE6E6E6, 0x1E1E1E), chrome: (0xF7F7F7, 0x282828), content: (0xFFFFFF, 0x161616)),
     ]
 
     private static func make(_ id: String, accent: (Int, Int), strip: (Int, Int), chrome: (Int, Int), content: (Int, Int)) -> Theme {

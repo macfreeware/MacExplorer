@@ -30,6 +30,7 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate, NSToo
     var onClose: (() -> Void)?
     /// Pencerenin altındaki işlev tuşu çubuğu (F2 Ad değiştir, F5 Kopyala …).
     private var functionBar: FunctionKeyBar?
+    private let titleBand = TitleBandView()
     private var functionBarHeight: NSLayoutConstraint?
     private let content = NSViewController()
     private var touchBarDualPane: Bool?
@@ -110,6 +111,7 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate, NSToo
         rebuildToolbar()
 
         installFunctionBar()
+        installTitleBand()
         installMonitors()
         previewDivider.onDrag = { [weak self] delta in self?.dragPreviewDivider(delta) }
         previewDivider.onDragEnd = { [weak self] in
@@ -204,6 +206,7 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate, NSToo
     }
 
     @objc private func themeChanged() {
+        titleBand.needsDisplay = true
         workspaceActivePaneDidChange()
         functionBar?.update(dualPane: workspace.isDualPane)
         sidebar.applyTheme()
@@ -664,6 +667,15 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate, NSToo
             print("Açık pencereler:", NSApp.windows.filter(\.isVisible).map { $0.title + ($0.parent === window ? " (bağlı)" : "") })
             for (i, w) in NSApp.windows.filter({ $0.isVisible && $0 !== window }).enumerated() { DebugSnapshot.capture(w, name: "during-\(i)") }
         case "settings": SettingsWindowController.shared.showWindow(nil)
+        case "bands?":
+            let dark = NSAppearance(named: .darkAqua)!
+            for theme in Theme.all {
+                let band = theme.titleBandColor.resolved(for: dark).usingColorSpace(.sRGB)!
+                let hex = String(format: "%02X%02X%02X", Int(band.redComponent * 255), Int(band.greenComponent * 255), Int(band.blueComponent * 255))
+                print("Bant", theme.id, hex, String(format: "%.2f", Theme.subtitleContrast(on: band)))
+            }
+        case "chrome?":
+            print("Pencere üstü | saydam başlık:", window?.titlebarAppearsTransparent ?? false, "| bant:", titleBand.frame.integral)
         case "aux?": print("Yardımcı pencereler | ayarlar açık:", SettingsWindowController.isOpen,
                            "| hakkında içeriği:", AboutWindowController.shared.window?.contentViewController != nil,
                            "| kısayollar içeriği:", ShortcutsWindowController.shared.window?.contentViewController != nil)
@@ -848,6 +860,31 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate, NSToo
     func validateToolbarItem(_ item: NSToolbarItem) -> Bool {
         guard let action = item.action else { return true }
         return validateMenuItem(NSMenuItem(title: "", action: action, keyEquivalent: ""))
+    }
+
+    // MARK: Başlık bandı ve pencere kenarı
+
+    /// Koyu görünümde pencerenin üstü (başlık ve araç çubuğu) temanın biraz açık bir tonunu alır: koyu masaüstünde ya da
+    /// koyu bir pencerenin önünde tutulacak yer seçilsin. Açık görünümde macOS'un kendi başlık çubuğu kalır.
+    /// (Pencere çevresine kenar çizgisi çizilmez: çerçeve katmanı köşe yarıçapını bildirmiyor, düz çizgi köşelerde kırılırdı.)
+    private func installTitleBand() {
+        titleBand.translatesAutoresizingMaskIntoConstraints = false
+        content.view.addSubview(titleBand, positioned: .above, relativeTo: mainSplit)
+        NSLayoutConstraint.activate([
+            titleBand.topAnchor.constraint(equalTo: content.view.topAnchor),
+            titleBand.leadingAnchor.constraint(equalTo: content.view.leadingAnchor),
+            titleBand.trailingAnchor.constraint(equalTo: content.view.trailingAnchor),
+            titleBand.bottomAnchor.constraint(equalTo: content.view.safeAreaLayoutGuide.topAnchor),
+        ])
+        titleBand.onAppearanceChange = { [weak self] in self?.applyWindowChrome() }
+        applyWindowChrome()
+    }
+
+    private func applyWindowChrome() {
+        guard let window else { return }
+        let dark = window.effectiveAppearance.isDark
+        if window.titlebarAppearsTransparent != dark { window.titlebarAppearsTransparent = dark }
+        titleBand.needsDisplay = true
     }
 
     // MARK: İşlev tuşu çubuğu ve Touch Bar
@@ -1165,4 +1202,30 @@ final class PaneDivider: NSView {
     }
 
     override func mouseUp(with event: NSEvent) { onDragEnd?() }
+}
+
+/// Başlık ve araç çubuğunun altında kalan bant (yalnızca koyu görünümde boyanır). Tıklamaları geçirir: pencere
+/// buradan sürüklenir, araç çubuğu düğmeleri üstünde kalır.
+@MainActor
+final class TitleBandView: NSView {
+    var onAppearanceChange: (() -> Void)?
+
+    override var isOpaque: Bool { false }
+    override var mouseDownCanMoveWindow: Bool { true }
+    override func hitTest(_ point: NSPoint) -> NSView? { nil }
+
+    override func draw(_ dirtyRect: NSRect) {
+        guard effectiveAppearance.isDark else { return }
+        Theme.current.titleBandColor.setFill()
+        bounds.fill()
+        // Alt kenarda ince ayırıcı: bant sekme şeridinden de ayrılsın.
+        NSColor.white.withAlphaComponent(0.10).setFill()
+        NSRect(x: bounds.minX, y: bounds.minY, width: bounds.width, height: 1).fill()
+    }
+
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        needsDisplay = true
+        onAppearanceChange?()
+    }
 }
