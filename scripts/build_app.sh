@@ -43,12 +43,18 @@ if git rev-parse --verify HEAD >/dev/null 2>&1; then
 fi
 
 # Sabit imza: macOS Gizlilik izinlerini imzaya bağlar; ad-hoc imzada her derleme yeni uygulama sayılır ve izinler yeniden
-# sorulur. Sertifika (scripts/make_signing_cert.sh) bu Mac'te yoksa ad-hoc imzalanır; yayımlama bunu reddeder.
+# sorulur. Geliştirme kopyası: freeware2 sertifikası (scripts/make_signing_cert.sh) varsa onunla, yoksa ad-hoc.
+# Yayımlama yalnızca SIGN_IDENTITY ile verilen Developer ID'yi kabul eder (scripts/make_release.sh).
 SIGN_NAME="freeware2 Code Signing"
 if [[ -z "${SIGN_IDENTITY:-}" ]] && security find-identity -p codesigning | grep -q "\"$SIGN_NAME\""; then
   SIGN_IDENTITY="$SIGN_NAME"
 fi
-codesign --force --sign "${SIGN_IDENTITY:--}" --timestamp=none "$APP"
+# Developer ID (yayım): Apple onayı için hardened runtime ve zaman damgası gerekir (bkz. RELEASING.md).
+if [[ "${SIGN_IDENTITY:-}" == "Developer ID Application: "* ]]; then
+  codesign --force --sign "$SIGN_IDENTITY" --options runtime --timestamp "$APP"
+else
+  codesign --force --sign "${SIGN_IDENTITY:--}" --timestamp=none "$APP"
+fi
 touch "$APP"   # Dock ve Finder simge önbelleği yenilensin
 echo "✔ Hazır: $APP"
 
