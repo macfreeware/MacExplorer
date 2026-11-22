@@ -9,6 +9,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var launchRequests: [() -> Void] = []
 
     func applicationWillFinishLaunching(_ notification: Notification) {
+        // exit, not terminate: terminating would save an empty session over the user's windows.
+        if AppTranslocation.relaunchFromOriginalIfNeeded() { exit(0) }
         SettingsMigration.run()
     }
 
