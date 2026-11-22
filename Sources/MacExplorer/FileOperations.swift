@@ -253,7 +253,9 @@ final class TransferProgressPanel: NSWindowController {
                          + ByteCountFormatter.string(fromByteCount: p.totalBytes, countStyle: .file))
         }
         if p.totalItems > 1 {
-            parts.append(String(localized: "\(p.completedItems) / \(p.totalItems) öğe", bundle: .live))
+            // The item being transferred now (1-based), not the number finished: the first file shows "1 / 3".
+            let current = min(p.completedItems + 1, p.totalItems)
+            parts.append(String(localized: "\(current) / \(p.totalItems) öğe", bundle: .live))
         }
         // Remaining time and average speed go on a second line so the first one isn't truncated.
         var timing: [String] = []
