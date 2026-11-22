@@ -173,6 +173,7 @@
 "İşlev tuşları" = "Function keys";
 "İşlev tuşu çubuğu" = "Function key bar";
 "Kalan süre: yaklaşık %@" = "Time remaining: about %@";
+"Ortalama hız: %@/sn" = "Average speed: %@/s";
 "Kalıcı olarak sil" = "Delete permanently";
 "Kalıcı Olarak Sil" = "Delete Permanently";
 "Kalıcı olarak silmek için Shift+Delete (⌥⌘⌫) kullanabilirsiniz." = "To delete permanently, use Shift+Delete (⌥⌘⌫).";

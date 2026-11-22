@@ -180,12 +180,14 @@ enum RemoteTransfers {
 
         func download(_ sources: [URL], to destination: URL, overwrite: Bool, client: any RemoteClient) async throws -> [URL] {
             var created: [URL] = []
+            // Scan every source before transferring so the totals (bar, item count, remaining time)
+            // cover the whole selection from the start instead of growing as each source begins.
+            var work: [(source: URL, local: URL, entries: [RemoteEntry])] = []
             for source in sources {
                 try checkCancelled()
                 currentRoot = source.absoluteString
                 let path = RemoteURL.path(of: source)
                 let local = destination.appendingPathComponent(source.lastPathComponent, isDirectory: source.hasDirectoryPath)
-                // Klasörün içindekiler önce listelenir: toplam boyut ilerleme çubuğu için bilinsin.
                 var entries: [RemoteEntry] = []
                 do {
                     if source.hasDirectoryPath {
@@ -197,7 +199,13 @@ enum RemoteTransfers {
                 } catch { fail(source.lastPathComponent, error); continue }
                 progress.totalBytes += entries.reduce(0) { $0 + $1.size }
                 progress.totalItems += entries.count
+                work.append((source, local, entries))
+            }
+            update()
 
+            for (source, local, entries) in work {
+                try checkCancelled()
+                currentRoot = source.absoluteString
                 var rootDone = false
                 for entry in entries {
                     try checkCancelled()
@@ -209,7 +217,7 @@ enum RemoteTransfers {
                         } else {
                             if FileManager.default.fileExists(atPath: entry.local.path), !overwrite {
                                 switch await resolve(entry.local.lastPathComponent) {
-                                case .skip: progress.completedBytes += entry.size; continue
+                                case .skip: progress.completedBytes += entry.size; progress.completedItems += 1; continue
                                 case .cancel: cancel(); throw CancellationError()
                                 case .replace: try? FileManager.default.removeItem(at: entry.local)
                                 }
@@ -259,13 +267,21 @@ enum RemoteTransfers {
         func upload(_ sources: [URL], to destination: URL, client: any RemoteClient) async throws -> [URL] {
             var created: [URL] = []
             let base = RemoteURL.path(of: destination)
+            // Scan every source before transferring so the totals cover the whole selection from the start.
+            var work: [(source: URL, entries: [LocalEntry])] = []
             for source in sources {
                 try checkCancelled()
-                currentRoot = source.absoluteString
                 var entries: [LocalEntry] = []
                 collect(source, remote: RemotePath.join(base, source.lastPathComponent), into: &entries)
                 progress.totalBytes += entries.reduce(0) { $0 + $1.size }
                 progress.totalItems += entries.count
+                work.append((source, entries))
+            }
+            update()
+
+            for (source, entries) in work {
+                try checkCancelled()
+                currentRoot = source.absoluteString
                 var rootDone = false
                 for entry in entries {
                     try checkCancelled()
@@ -280,7 +296,7 @@ enum RemoteTransfers {
                         } else {
                             if (try? await client.size(entry.path)) != nil {
                                 switch await resolve(entry.url.lastPathComponent) {
-                                case .skip: progress.completedBytes += entry.size; continue
+                                case .skip: progress.completedBytes += entry.size; progress.completedItems += 1; continue
                                 case .cancel: cancel(); throw CancellationError()
                                 case .replace: break
                                 }

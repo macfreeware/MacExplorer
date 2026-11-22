@@ -178,7 +178,7 @@ final class TransferProgressPanel: NSWindowController {
     private let bar = NSProgressIndicator()
     /// Geçerli öğenin adı (kendi satırında: ad uzayıp kısaldıkça sayılar kaymasın).
     private let detail = NSTextField(labelWithString: "")
-    /// Bayt, öğe sayısı ve kalan süre; rakamlar sabit genişlikte.
+    /// Bayt, öğe sayısı, kalan süre ve ortalama hız; rakamlar sabit genişlikte.
     private let stats = NSTextField(labelWithString: "")
     private var finished = false
     /// Çakışma sorusu açık: pencere gizli kalır, soru cevaplanınca yeniden görünür.
@@ -218,6 +218,7 @@ final class TransferProgressPanel: NSWindowController {
         stats.font = .monospacedDigitSystemFont(ofSize: 11, weight: .regular)
         stats.textColor = .secondaryLabelColor
         stats.lineBreakMode = .byTruncatingTail
+        stats.maximumNumberOfLines = 2
         let cancel = NSButton(title: String(localized: "İptal", bundle: .live), target: self, action: #selector(cancelClicked))
         cancel.keyEquivalent = "\u{1b}"
 
@@ -254,11 +255,18 @@ final class TransferProgressPanel: NSWindowController {
         if p.totalItems > 1 {
             parts.append(String(localized: "\(p.completedItems) / \(p.totalItems) öğe", bundle: .live))
         }
+        // Remaining time and average speed go on a second line so the first one isn't truncated.
+        var timing: [String] = []
         let elapsed = Date().timeIntervalSince(started)
         if fraction > 0.02, elapsed > 1.5, let text = remaining.string(from: elapsed / fraction - elapsed) {
-            parts.append(String(localized: "Kalan süre: yaklaşık \(text)", bundle: .live))
+            timing.append(String(localized: "Kalan süre: yaklaşık \(text)", bundle: .live))
         }
-        stats.stringValue = parts.isEmpty ? " " : parts.joined(separator: "  ·  ")
+        if p.completedBytes > 0, elapsed > 1.5 {
+            let speed = ByteCountFormatter.string(fromByteCount: Int64(Double(p.completedBytes) / elapsed), countStyle: .file)
+            timing.append(String(localized: "Ortalama hız: \(speed)/sn", bundle: .live))
+        }
+        let lines = [parts, timing].filter { !$0.isEmpty }.map { $0.joined(separator: "  ·  ") }
+        stats.stringValue = lines.isEmpty ? " " : lines.joined(separator: "\n")
     }
 
     func beginQuestion() {
